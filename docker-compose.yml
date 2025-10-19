@@ -1,0 +1,47 @@
+services:
+  guacamole:
+    image: guacamole/guacamole:latest
+    container_name: guacamole
+    restart: always
+    depends_on:
+      - guacd
+      - postgres
+    environment:
+      GUACD_HOSTNAME: guacd
+      GUACD_PORT: 4822
+      POSTGRESQL_HOSTNAME: postgres
+      POSTGRESQL_DATABASE: guacamole_db
+      POSTGRESQL_USERNAME: guacamole_user
+      POSTGRESQL_PASSWORD: your_strong_password
+    ports:
+      - "8080:8080"
+    networks:
+      - guacnet
+
+  guacd:
+    image: guacamole/guacd:latest
+    container_name: guacd
+    restart: always
+    networks:
+      - guacnet
+
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: guacamole_db
+      POSTGRES_USER: guacamole_user
+      POSTGRES_PASSWORD: your_strong_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d/
+    networks:
+      - guacnet
+
+networks:
+  guacnet:
+    driver: bridge
+
+volumes:
+  postgres_data:
