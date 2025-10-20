@@ -4,6 +4,7 @@ export type Node = {
   pid: number | null;
   vncPort: number | null;
   overlayPath: string;
+  baseImage: string; 
   guacamoleConnectionId: string | null;
   guacamoleUrl: string | null;
 };

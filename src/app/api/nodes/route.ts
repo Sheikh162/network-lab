@@ -10,11 +10,17 @@ export async function GET() {
     }
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
-    const newNode = await createNode();
+    const { baseImage } = await req.json();
+    if (!baseImage) {
+      return NextResponse.json({ message: "Missing base image" }, { status: 400 });
+    }
+
+    const newNode = await createNode(baseImage);
     return NextResponse.json(newNode, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+  } catch (error: any) {
+    console.error("Error creating node:", error);
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

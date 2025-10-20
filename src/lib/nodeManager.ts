@@ -1,7 +1,8 @@
 import { Node } from './types';
 import { exec } from 'child_process';
 import { spawn } from 'child_process';
-import { promises as fs } from 'fs';
+import fs from 'fs/promises';
+import fsSync from 'fs';
 import { randomUUID } from 'crypto';
 import path from 'path';
 import { Mutex } from 'async-mutex';
@@ -11,7 +12,6 @@ import { createGuacamoleConnection, deleteGuacamoleConnection } from './guacamol
 const execAsync = util.promisify(exec);
 
 const DB_PATH = path.resolve('./data/nodes.json');
-const BASE_IMAGE_PATH = path.resolve('./base_images/base.qcow2');
 const OVERLAYS_DIR = path.resolve('./overlays');
 
 const fileMutex = new Mutex();
@@ -32,34 +32,20 @@ async function writeNodes(nodes: Node[]): Promise<void> {
 export async function getAllNodes(): Promise<Node[]> {
   return fileMutex.runExclusive(async () => {
     const nodes = await readNodes();
-    // const { stdout } = await execAsync("ps -o pid= -o comm=");
-    // const runningPids = new Set(
-    //     stdout.split('\n')
-    //     .filter(line => line.includes('qemu-system-x86'))
-    //     .map(line => parseInt(line.trim().split(' ')[0]))
-    // );
-    
-    // nodes.forEach(node => {
-    //     if (node.status === 'running' && !runningPids.has(node.pid!)) {
-    //         console.log(`Cleaning up stale node: ${node.id}`);
-    //         node.status = 'stopped';
-    //         node.pid = null;
-    //         node.vncPort = null;
-    //         node.guacamoleUrl = null;
-    //         // Optionally delete the Guacamole connection here as well
-    //     }
-    // });
-
-    // await writeNodes(nodes);
     return nodes;
   });
 }
 
-export async function createNode(): Promise<Node> {
+export async function createNode(baseImage: string): Promise<Node> {
   return fileMutex.runExclusive(async () => {
     const nodes = await readNodes();
     const newNodeId = randomUUID();
     const overlayPath = path.join(OVERLAYS_DIR, `${newNodeId}.qcow2`);
+    const BASE_IMAGE_PATH = path.resolve(`./base_images/${baseImage}`); 
+
+    if (!fsSync.existsSync(BASE_IMAGE_PATH)) {
+      throw new Error(`Base image not found: ${BASE_IMAGE_PATH}`);
+    }
 
     const command = `qemu-img create -f qcow2 -o backing_file=${BASE_IMAGE_PATH},backing_fmt=qcow2 ${overlayPath}`;
     await execAsync(command);
@@ -69,7 +55,8 @@ export async function createNode(): Promise<Node> {
       status: 'stopped',
       pid: null,
       vncPort: null,
-      overlayPath: overlayPath,
+      overlayPath,
+      baseImage:BASE_IMAGE_PATH,
       guacamoleConnectionId: null,
       guacamoleUrl: null,
     };
@@ -104,20 +91,6 @@ export async function startNode(id: string): Promise<Node> {
     node.status = 'running';
     node.vncPort = vncPort;
 
-
-    // try {
-    //   const id = await createGuacamoleConnection(node.id, vncPort);
-    //   node.guacamoleConnectionId = id
-    //   node.guacamoleUrl = `http://localhost:8080/guacamole/#/client/${encodeURIComponent(id)}`;
-    // } catch (error) {
-    //   console.error("Failed to auto-register with Guacamole:", error);
-    //   process.kill(node.pid); // Kill the VM if registration fails
-    //   throw new Error("Failed to register node with Guacamole.");
-    // }
-
-    // after node.vncPort assigned, before writeNodes
-
-    // If we already have a stored guacamoleConnectionId, verify it exists or reuse
     if (node.guacamoleConnectionId) {
     } else {
       try {
@@ -131,7 +104,6 @@ export async function startNode(id: string): Promise<Node> {
       }
     }
 
-    
     await writeNodes(nodes);
     return node;
   })
@@ -165,36 +137,92 @@ export async function stopNode(id: string): Promise<Node> {
 }
 
 export async function wipeNode(id: string): Promise<Node> {
-    return fileMutex.runExclusive(async () => {
-        let nodes = await readNodes();
-        let node = nodes.find((n) => n.id === id);
+  return fileMutex.runExclusive(async () => {
+    let nodes = await readNodes();
+    let node = nodes.find((n) => n.id === id);
+    if (!node) {
+      console.error(`Node ${id} not found.`);
+      throw new Error('Node not found.');
+    }
 
-        if (!node) throw new Error('Node not found.');
+    console.log(`Node found:`, node);
 
-        if (node.status === 'running') {
-            try {
-              process.kill(node.pid!);
-            } catch (error) { }
+    if (node.status === 'running') {
+      try {
+        process.kill(node.pid!);
+      } catch (error) {
+        console.warn(`Failed to kill process ${node.pid}:`, error);
+      }
 
-            if (node.guacamoleConnectionId) {
-              await deleteGuacamoleConnection(node.guacamoleConnectionId);
-            }
+      if (node.guacamoleConnectionId) {
+        try {
+          await deleteGuacamoleConnection(node.guacamoleConnectionId);
+        } catch (error) {
+          console.warn(`Failed to delete Guacamole connection:`, error);
         }
-        
-        node.pid = null;
-        node.status = 'stopped';
-        node.vncPort = null;
-        node.guacamoleConnectionId = null;
-        node.guacamoleUrl = null;
-        await writeNodes(nodes);
-        
-        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
 
-        await fs.unlink(node.overlayPath);
+    node.pid = null;
+    node.status = 'stopped';
+    node.vncPort = null;
+    node.guacamoleConnectionId = null;
+    node.guacamoleUrl = null;
 
-        const command = `qemu-img create -f qcow2 -o backing_file=${BASE_IMAGE_PATH},backing_fmt=qcow2 ${node.overlayPath}`;
-        await execAsync(command);
+    await writeNodes(nodes);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      await fsSync.unlinkSync(node.overlayPath);
+    } catch (error) {
+      console.error(` Failed to delete overlay: ${node.overlayPath}`, error);
+    }
 
-        return node;
-    });
+    const command = `qemu-img create -f qcow2 -o backing_file=${node.baseImage},backing_fmt=qcow2 ${node.overlayPath}`;
+    console.log(`Recreating overlay with command: ${command}`);
+
+    try {
+      await execAsync(command);
+    } catch (error) {
+      console.error(`Failed to recreate overlay:`, error);
+    }
+
+    return node;
+  });
+}
+
+
+export async function deleteNode(id: string): Promise<void> {
+  return fileMutex.runExclusive(async () => {
+    let nodes = await readNodes();
+    const nodeIndex = nodes.findIndex((n) => n.id === id);
+
+    if (nodeIndex === -1) {
+      throw new Error('Node not found.');
+    }
+    
+    const node = nodes[nodeIndex];
+
+    if (node.status === 'running' && node.pid) {
+      console.log(`Stopping running node ${id} (PID: ${node.pid}) before deletion.`);
+      try {
+        process.kill(node.pid);
+      } catch (error) {
+        console.warn(`Failed to kill process ${node.pid}, it may have already stopped.`, error);
+      }
+      if (node.guacamoleConnectionId) {
+        try {
+          await deleteGuacamoleConnection(node.guacamoleConnectionId);
+        } catch (error) {
+          console.warn(`Failed to delete Guacamole connection:`, error);
+        }
+      }
+    }
+    try {
+      await fs.unlink(node.overlayPath);
+    } catch (error) {
+      console.error(`Failed to delete overlay file: ${node.overlayPath}`, error);
+    }
+    nodes.splice(nodeIndex, 1);
+    await writeNodes(nodes);
+  });
 }

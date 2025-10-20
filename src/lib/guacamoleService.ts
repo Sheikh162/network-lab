@@ -32,7 +32,7 @@ export async function getGuacAuthToken(): Promise<{ authToken: string; username:
   }
 }
 
-async function findExistingConnection(nodeId: string, vncPort: number, hostname?: string): Promise<string | null> {
+export async function findExistingConnection(nodeId: string, vncPort: number, hostname?: string): Promise<string | null> {
   const { authToken } = await getGuacAuthToken();
   const url = `${GUAC_API_URL}/api/session/data/${DATA_SOURCE}/connections`;
 
@@ -77,7 +77,7 @@ export async function createGuacamoleConnection(nodeId: string, vncPort: number,
     const body = {
       parentIdentifier: 'ROOT',
       name: `Node ${nodeId.substring(0, 8)}`,
-      identifier: nodeId, // optional, can be set or let Guacamole generate
+      identifier: nodeId, 
       protocol: 'vnc',
       parameters: {
         port: String(vncPort),
@@ -110,7 +110,7 @@ export async function createGuacamoleConnection(nodeId: string, vncPort: number,
         'wol-udp-port': '',
         'wol-wait-time': '',
         hostname: 'host.docker.internal',
-        password: '' // empty if no VNC password
+        password: '' 
       },
       attributes: {
         'failover-only': '',
