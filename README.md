@@ -4,7 +4,7 @@ NodeLabs is a full-stack application designed to create, manage, and interact wi
 
 ## 📹 Project Demo
 
-[![NodeLabs Project Demo](./assets/thumbnail.png)](./assets/NodeLabs.mp4)
+[![NodeLabs Project Demo](./assets/thumbnail.png)](https://youtu.be/bnMm-nO8pSg)
 
 *Click the thumbnail above to watch the full project demonstration video.*
 
@@ -225,12 +225,6 @@ Bash
 docker-compose logs -f
 
 # View logs for a specific service
-docker-compose logs -f next-app
+docker-compose logs -f guacamole
 ```
-
-* * * * *
-
-📝 License
-----------
-This project is licensed under the MIT License.
 
