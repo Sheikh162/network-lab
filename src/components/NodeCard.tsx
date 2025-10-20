@@ -48,24 +48,29 @@ export function NodeCard({ node, onActionComplete }: NodeCardProps) {
   const handleDelete =() => handleAction('delete', `Node deleted successfully`, 'Failed to delete node.');
 
 
+  // async function openGuacConsole(nodeId: string) {
+  //   try {
+  //     const res = await fetch(`/api/guac/connect/${nodeId}`);
+  //     if (!res.ok) {
+  //       const errorText = await res.text();
+  //       throw new Error(`Failed to get Guacamole URL: ${errorText}`);
+  //     }
+  //     const data = await res.json();
+  //     if (data.url) {
+  //       window.open(data.url, '_blank', 'noopener,noreferrer');
+  //     } else {
+  //       throw new Error('No Guacamole URL found in the server response.');
+  //     }
+  //   } catch (error: any) {
+  //     console.error('Error opening Guacamole console:', error);
+  //     toast.error(error.message || 'Error connecting to VM console.');
+  //   }
+  // }
+
   async function openGuacConsole(nodeId: string) {
-    try {
-      const res = await fetch(`/api/guac/connect/${nodeId}`);
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to get Guacamole URL: ${errorText}`);
-      }
-      const data = await res.json();
-      if (data.url) {
-        window.open(data.url, '_blank', 'noopener,noreferrer');
-      } else {
-        throw new Error('No Guacamole URL found in the server response.');
-      }
-    } catch (error: any) {
-      console.error('Error opening Guacamole console:', error);
-      toast.error(error.message || 'Error connecting to VM console.');
-    }
-  }
+  //alert("Console access is disabled in this simulation demo. In the full application, this would open a remote console to the virtual machine.");
+    window.open('/screenshots/sandbox-3.png', '_blank', 'noopener,noreferrer');
+}
 
   return (
     <Card className="flex flex-col">
