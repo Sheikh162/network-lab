@@ -11,7 +11,7 @@ NodeLabs is a full-stack application designed to create, manage, and interact wi
 ## 🌐 Live Demo
 
 **Deployed Simulation (Frontend Only):**  
- [https://your-vercel-deployment-url.vercel.app](https://your-vercel-deployment-url.vercel.app)
+ [https://network-lab-eta.vercel.app/](https://network-lab-eta.vercel.app/)
 
 > ⚠️ **Note:**  
 > This deployment is an early **frontend simulation** of the project.  
