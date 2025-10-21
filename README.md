@@ -83,14 +83,19 @@ git clone [https://github.com/Sheikh162/network-lab.git](https://github.com/Shei
 cd network-lab 
 ```
 
-### 2\. Create and Populate the `base_images` Directory
+### 2\. Create, Populate `base_images`, `overlays`, `data` Directories
 
 The application expects base disk images to be located in the `base_images/` directory.
-Create the directory if it doesn't exist:
+Create the directory in root of the project if it doesn't exist, along with `overlays`, `data/nodes.json`:
+
 Bash
 
 ```bash
-mkdir base_images
+# Create required directories
+mkdir -p base_images overlays data
+
+# Initialize nodes.json with an empty array
+echo '[]' > data/nodes.json
 ```
 
 Place your `.qcow2` image files inside this folder. You can create your own or download pre-built cloud images.
@@ -231,9 +236,7 @@ network-lab/
 ----------------
 
 The application is configured through environment variables in `.env.local` and `docker-compose.yml`.
--   **`GUACAMOLE_ADMIN_PASSWORD`**: Sets the password for the `guacadmin` user in Guacamole. By default, password is guacadmin.
--   **`INTERNAL_GUACAMOLE_URL`**: The URL used for service-to-service communication inside Docker (e.g., `http://guacamole:8080/guacamole`).
--   **`NEXT_PUBLIC_GUACAMOLE_URL`**: The public-facing URL that the user's browser will access (e.g., `http://localhost:8080/guacamole`).
+-   **`GUACAMOLE_ADMIN_PASSWORD`**: Sets the password for the `guacadmin` user in Guacamole. By default, password is `guacadmin`.
 
 * * * * *
 
