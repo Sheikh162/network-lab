@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(/* request: Request, { params }: { params: Promise<{ id: string }> } */) {
   // In the simulation, we just return a placeholder URL.
   // The frontend component will handle this with an alert.
   return NextResponse.json({ url: '#' });
