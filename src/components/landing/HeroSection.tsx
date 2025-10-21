@@ -17,7 +17,7 @@ export default function HeroSection() {
         transition={{ duration: 0.8 }}
       >
         <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-          Instant, Disposable Network Labs
+          Instant, Disposable QEMU Labs
         </h1>
         <h2 className="max-w-[700px] mx-auto text-muted-foreground md:text-xl mt-4">
           Create, Manage, Access VMs Instantly. In Your Browser.
