@@ -8,6 +8,12 @@ import { PlusCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { NodeCard } from '@/components/NodeCard';
 
+  const mockImages = [
+    'cirros-0.5.2-x86_64-disk.img.qcow2',
+    'tinycore-11.1.qcow2',
+    'ubuntu-20.04-cloudimg-amd64.qcow2'
+  ];
+
 export default function LabPage() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [availableImages, setAvailableImages] = useState<string[]>([]);
@@ -41,7 +47,8 @@ export default function LabPage() {
       setAvailableImages(data);
     } catch (error) {
       console.error(error);
-      toast.error('Could not load available images.');
+      setAvailableImages(mockImages)
+      //toast.error('Could not load available images.');
     } finally {
       setImagesLoading(false);
     }
