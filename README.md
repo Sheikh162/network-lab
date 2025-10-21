@@ -8,6 +8,33 @@ NodeLabs is a full-stack application designed to create, manage, and interact wi
 
 *Click the thumbnail above to watch the full project demonstration video.*
 
+## 🌐 Live Demo
+
+**Deployed Simulation (Frontend Only):**  
+ [https://network-lab-eta.vercel.app/](https://network-lab-eta.vercel.app/)
+
+> ⚠️ **Note:**  
+> This deployment is an early **frontend simulation** of the project.  
+> The current version demonstrates the user interface and workflow only — virtual machine creation and backend integrations (e.g., QEMU, Guacamole) are **not yet functional**, but can be used when installed locally (follow instructions below).  
+> A full version with live VM management will be released later on the main branch.
+
+
+## 🚀 Current Status
+
+> 🏗 **Development done, full deployment yet to complete**
+>
+> The `master` branch contains the **main backend-integrated version** of the project.
+>  
+> It will support:
+> - Creating and managing real VM instances  
+> - QEMU-based virtualization  
+> - Guacamole-powered browser console access  
+> - Persistent node management and API control  
+
+A functional **frontend-only simulation** is already live for previewing the UI flow.
+
+---
+
 ## ✨ Features
 
 - **Complete VM Lifecycle Management**: Create, run, stop, wipe, and delete virtual nodes via a clean user interface.
