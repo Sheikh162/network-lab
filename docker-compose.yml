@@ -24,6 +24,8 @@ services:
     restart: always
     networks:
       - guacnet
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   postgres:
     image: postgres:14
