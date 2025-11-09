@@ -47,3 +47,6 @@ next-env.d.ts
 # QEMU runtime files
 /overlays/
 /data/
+
+# Task 2 stuff
+/task2_overlays/
